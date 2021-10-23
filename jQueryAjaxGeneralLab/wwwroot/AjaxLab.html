@@ -122,9 +122,9 @@
 
         // 比對兩個產品資料是否一致
         function ProductCancelUpdateCompare(source, target) {
-            var result = false;
+            var result = 0;
 
-            if (source.ID == target.ID) result = true;
+            if (source.ID == target.ID) result = 1;
 
             return result;
         };
@@ -142,17 +142,20 @@
 
             $.ajax({
                 type: "Get",
-                url: "https://localhost:44359/API/Product",
+                url: "https://localhost:44359/API/Product/",
+                data: {ID: data.ID},
                 dataType: "json",
-                data: data.ID,
                 success: function (returnData) {
-
+                    console.log(data.ID);
+                    console.log(data);
+                    console.log(returnData);
+                    console.log(ProductCancelUpdateCompare(returnData, data));
                     if (ProductCancelUpdateCompare(returnData, data) == 1) {
                         $("<tr>").append(
-                            $("<td>").text(data.ID),
-                            $("<td>").text(data.Name),
-                            $("<td>").text(data.Price),
-                            $("<td>").text(data.Memo),
+                            $("<td>").text(returnData.ID),
+                            $("<td>").text(returnData.Name),
+                            $("<td>").text(returnData.Price),
+                            $("<td>").text(returnData.Memo),
                             $("<td>").append($("<input>").addClass("form-control")
                                 .attr({ type: "button" }).val("編輯")).attr("id", "Edit"),
                             $("<td>").append($("<input>").addClass("form-control")
@@ -190,6 +193,29 @@
                     alert("產品刪除失敗。");
                 }
             });
+        };
+
+        // 編輯產品
+        $(document).on("click", "#Edit", EditProduct);
+        function EditProduct () {
+            var row = $(this).closest("tr");
+            var data = {
+                ID: row.find("td:eq(0)").text(),
+                Name: row.find("td:eq(1)").text(),
+                Price: row.find("td:eq(2)").text(),
+                Memo: row.find("td:eq(3)").text(),
+            };
+
+            $("<tr>").append(
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品代碼", type: "type" }).val(data.ID)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品名稱", type: "type" }).val(data.Name)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品價格", type: "type" }).val(data.Price)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品說明", type: "type" }).val(data.Memo)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ id: "Update", type: "button" }).val("更新")),
+                $("<td>").append($("<input>").addClass("form-control").attr({ id: "Cancel", type: "button" }).val("取消"))
+            ).insertAfter(row);
+
+            row.remove();
         };
     </script>
 </body>

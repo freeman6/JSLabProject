@@ -53,7 +53,7 @@ namespace WebAPI.Controllers
                 var result = products.FirstOrDefault(x => x.ID == id);
                 products.Remove(result);
             }
-            return products;
+            return products; 
         }
 
         // DELETE api/values
