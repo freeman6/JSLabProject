@@ -28,8 +28,14 @@
             </thead>
             <tbody></tbody>
         </table>
-        <button type="button" onclick="javascript: AddEmptyProduct()" class="btn btn-primary">新增產品</button>
-        <button type="button" id="get" class="btn btn-primary">取得 Json Code</button>
+        <button type="button" onclick="javascript: AddEmptyProduct()" class="btn btn-primary mb-3">新增產品</button>
+        <button type="button" id="GetTableJson" class="btn btn-primary mb-3">取得 Table Json Code</button>
+        <button type="button" id="GetInputJson" class="btn btn-primary mb-3">取得 Input Json Code</button>
+        <div id="jsonList">
+            <h4>取得的 JSON 資料如下：</h4>
+            <pre id="jsonData"></pre>
+        </div>
+
     </div>
     <!-- Bootstrap js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
@@ -55,6 +61,8 @@
                     alert("服務失聯，無法取得產品資料。")
                 }
             });
+
+            $("#jsonList").hide();
         });
 
         // 產品列表
@@ -123,9 +131,9 @@
         // 比對兩個產品資料是否一致
         function ProductCancelUpdateCompare(source, target) {
             var result = 0;
-
-            if (source.ID == target.ID) result = 1;
-
+            if (source != null) {
+                if (source.ID == target.ID) result = 1;
+            }
             return result;
         };
 
@@ -140,31 +148,35 @@
                 Memo: row.find("input:eq(3)").val(),
             };
 
-            $.ajax({
-                type: "Get",
-                url: "https://localhost:44359/API/Product/",
-                data: {ID: data.ID},
-                dataType: "json",
-                success: function (returnData) {
-                    if (ProductCancelUpdateCompare(returnData, data) == 1) {
-                        $("<tr>").append(
-                            $("<td>").text(returnData.ID),
-                            $("<td>").text(returnData.Name),
-                            $("<td>").text(returnData.Price),
-                            $("<td>").text(returnData.Memo),
-                            $("<td>").append($("<input>").addClass("form-control")
-                                .attr({ type: "button" }).val("編輯")).attr("id", "Edit"),
-                            $("<td>").append($("<input>").addClass("form-control")
-                                .attr({ type: "button" }).val("刪除")).attr("id", "Delete")
-                        ).insertAfter(row);
+            if (data.ID != '') {
+                $.ajax({
+                    type: "Get",
+                    url: "https://localhost:44359/API/Product/",
+                    data: { ID: data.ID },
+                    dataType: "json",
+                    success: function (returnData) {
+                        if (ProductCancelUpdateCompare(returnData, data) == 1) {
+                            $("<tr>").append(
+                                $("<td>").text(returnData.ID),
+                                $("<td>").text(returnData.Name),
+                                $("<td>").text(returnData.Price),
+                                $("<td>").text(returnData.Memo),
+                                $("<td>").append($("<input>").addClass("form-control")
+                                    .attr({ type: "button" }).val("編輯")).attr("id", "Edit"),
+                                $("<td>").append($("<input>").addClass("form-control")
+                                    .attr({ type: "button" }).val("刪除")).attr("id", "Delete")
+                            ).insertAfter(row);
+                        }
+                        row.remove();
+                    },
+                    error: function (e) {
+                        alert("資料更新失敗。")
                     }
-                    row.remove();
-                },
-                error: function () {
-                    alert("資料更新失敗。")
-                }
-            });
-
+                });
+            }
+            else {
+                row.remove();
+            }
         };
 
         // 刪除產品
@@ -203,16 +215,57 @@
             };
 
             $("<tr>").append(
-                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品代碼", type: "type" }).val(data.ID)),
-                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品名稱", type: "type" }).val(data.Name)),
-                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品價格", type: "type" }).val(data.Price)),
-                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品說明", type: "type" }).val(data.Memo)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品代碼", type: "text" }).val(data.ID)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品名稱", type: "text" }).val(data.Name)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品價格", type: "text" }).val(data.Price)),
+                $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品說明", type: "text" }).val(data.Memo)),
                 $("<td>").append($("<input>").addClass("form-control").attr({ id: "Update", type: "button" }).val("更新")),
                 $("<td>").append($("<input>").addClass("form-control").attr({ id: "Cancel", type: "button" }).val("取消"))
             ).insertAfter(row);
 
             row.remove();
         };
+
+        // 取得 Table JSON 
+        $(document).on("click", "#GetTableJson", GetTableJson);
+        function GetTableJson() {
+            var data = $.map($("#project-table>tbody>tr"), function (tr) {
+                var $inp = $("td", tr);
+                console.log($inp.eq(0).text());
+                if (($inp.eq(0).text() != undefined) && ($inp.eq(0).text() != '')) {
+                    return {
+                        ID: $inp.eq(0).text(),
+                        Name: $inp.eq(1).text(),
+                        Price: $inp.eq(2).text(),
+                        Memo: $inp.eq(3).text()
+                    };
+                }
+            });
+
+            var result = JSON.stringify(data, null, 2);
+            $("#jsonList").show();
+            $('#jsonData').text(result);
+        }
+
+        // 取得 Table Input JSON 
+        $(document).on("click", "#GetInputJson", GetInputJson);
+        function GetInputJson() {
+            var data = $.map($("#project-table>tbody>tr"), function (tr) {
+                var $inp = $("input[type='text']", tr);
+                if (($inp.eq(0).val() != undefined) && ($inp.eq(0).val() != '')) {
+                    return {
+                        ID: $inp.eq(0).val(),
+                        Name: $inp.eq(1).val(),
+                        Price: $inp.eq(2).val(),
+                        Memo: $inp.eq(3).val()
+                    };
+                }
+            });
+
+            var result = JSON.stringify(data, null, 2);
+            $("#jsonList").show();
+            $('#jsonData').text(result);
+        }
     </script>
 </body>
 
