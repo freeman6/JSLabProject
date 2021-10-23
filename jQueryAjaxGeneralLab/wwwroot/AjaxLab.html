@@ -167,6 +167,30 @@
             });
 
         };
+
+        // 刪除產品
+        $(document).on("click", "#Delete", DeleteProduct);
+        function DeleteProduct() {
+            var row = $(this).closest("tr");
+            var data = {
+                ID: row.find("td:eq(0)").text(),
+                Name: row.find("td:eq(1)").text(),
+                Price: row.find("td:eq(2)").text(),
+                Memo: row.find("td:eq(3)").text()
+            };
+
+            $.ajax({
+                type: "Delete",
+                url: "https://localhost:44359/API/Product",
+                data: data,
+                success: function (returnData) {
+                    row.remove();
+                },
+                error: function () {
+                    alert("產品刪除失敗。");
+                }
+            });
+        };
     </script>
 </body>
 

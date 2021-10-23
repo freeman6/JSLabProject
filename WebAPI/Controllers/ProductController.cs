@@ -62,7 +62,7 @@ namespace WebAPI.Controllers
             if (products.Any(x => x.ID == item.ID))
             {
                 var result = products.FirstOrDefault(x => x.ID == item.ID);
-                products.Remove(products.FirstOrDefault(x => x.ID == item.ID));
+                products.Remove(result);
             }
             return products;
         }
