@@ -119,6 +119,54 @@
                 }
             });
         };
+
+        // 比對兩個產品資料是否一致
+        function ProductCancelUpdateCompare(source, target) {
+            var result = false;
+
+            if (source.ID == target.ID) result = true;
+
+            return result;
+        };
+
+        // 取消更新
+        $(document).on("click", "#Cancel", CancelUpdateProduct);
+        function CancelUpdateProduct() {
+            var row = $(this).closest("tr");
+            var data = {
+                ID: row.find("input:eq(0)").val(),
+                Name: row.find("input:eq(1)").val(),
+                Price: row.find("input:eq(2)").val(),
+                Memo: row.find("input:eq(3)").val(),
+            };
+
+            $.ajax({
+                type: "Get",
+                url: "https://localhost:44359/API/Product",
+                dataType: "json",
+                data: data.ID,
+                success: function (returnData) {
+
+                    if (ProductCancelUpdateCompare(returnData, data) == 1) {
+                        $("<tr>").append(
+                            $("<td>").text(data.ID),
+                            $("<td>").text(data.Name),
+                            $("<td>").text(data.Price),
+                            $("<td>").text(data.Memo),
+                            $("<td>").append($("<input>").addClass("form-control")
+                                .attr({ type: "button" }).val("編輯")).attr("id", "Edit"),
+                            $("<td>").append($("<input>").addClass("form-control")
+                                .attr({ type: "button" }).val("刪除")).attr("id", "Delete")
+                        ).insertAfter(row);
+                    }
+                    row.remove();
+                },
+                error: function () {
+                    alert("資料更新失敗。")
+                }
+            });
+
+        };
     </script>
 </body>
 
