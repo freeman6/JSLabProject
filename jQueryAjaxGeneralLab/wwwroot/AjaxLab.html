@@ -1,0 +1,73 @@
+﻿<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+</head>
+
+<body>
+    
+    <div class="container-fluid">
+        <h1>jQuery Ajax Lab Project</h1>
+        <table id="project-table" class="table table-Drak table-striped">
+            <thead>
+                <tr>
+                    <th>產品代碼</th>
+                    <th>產品名稱</th>
+                    <th>產品價格</th>
+                    <th>產品說明</th>
+                    <td colspan="2">系統功能</td>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button type="button" onclick="javascript: ProductTable()" class="btn btn-primary">新增產品</button>
+        <button type="button" id="get" class="btn btn-primary">取得 Json Code</button>
+    </div>
+    <!-- Bootstrap js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+
+    <!--Include jQuery CDN-->
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+    
+    <!--Custom Javascript-->
+    <script>
+        $(function GetData() {
+            $.ajax({
+                type: "get",
+                url: "https://localhost:44359/API/Product",
+                datatype: "json",
+                success: function (returnData) {
+                    $.each(returnData, function (i, item) {
+                        ProductList(returnData[i]);
+                    })
+                },
+                error: function() {
+                    alert("服務失聯，無法取得產品資料。")
+                }
+            });
+        });
+
+        function ProductList(item) {
+            $("#project-table>tbody").append(
+                $("<tr>").append(
+                    $("<td>").text(item.ID),
+                    $("<td>").text(item.Name),
+                    $("<td>").text(item.Price),
+                    $("<td>").text(item.Memo),
+                    $("<td>").append($("<input>").addClass("form-control").attr("id", "Edit").attr("type", "button").val("編輯")),
+                    $("<td>").append($("<input>").addClass("form-control").attr("id", "Delete").attr("type", "button").val("刪除"))
+                )
+            )
+        };
+    </script>
+</body>
+
+</html>
