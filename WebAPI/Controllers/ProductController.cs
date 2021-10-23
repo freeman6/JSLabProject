@@ -11,7 +11,7 @@ namespace WebAPI.Controllers
 {
     public class ProductController : ApiController
     {
-        public List<Product> products => ProductHelper.Products;
+        public List<Product> products = ProductHelper.Products;
 
         // GET api/values
         public IEnumerable<Product> Get()
@@ -38,26 +38,22 @@ namespace WebAPI.Controllers
         // DELETE api/values/5
         public List<Product> Delete(int id)
         {
-            var result = new Product();
             if (products.Any(x => x.ID == id))
             {
-                result = products.FirstOrDefault(x => x.ID == id);
+                var result = products.FirstOrDefault(x => x.ID == id);
                 products.Remove(result);
             }
-
             return products;
         }
 
         // DELETE api/values
-        public List<Product> Delete([FromBody] Product item)
+        public List<Product> Delete([FromBody]Product item)
         {
-            var result = new Product();
-            if (products.Any(x => x.ID==item.ID))
+            if (products.Any(x => x.ID == item.ID))
             {
-                result = products.FirstOrDefault(x => x.ID==item.ID);
-                products.Remove(result);
+                var result = products.FirstOrDefault(x => x.ID == item.ID);
+                products.Remove(products.FirstOrDefault(x => x.ID == item.ID));
             }
-
             return products;
         }
     }
