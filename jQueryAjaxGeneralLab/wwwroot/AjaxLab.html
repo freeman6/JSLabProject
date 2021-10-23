@@ -146,10 +146,6 @@
                 data: {ID: data.ID},
                 dataType: "json",
                 success: function (returnData) {
-                    console.log(data.ID);
-                    console.log(data);
-                    console.log(returnData);
-                    console.log(ProductCancelUpdateCompare(returnData, data));
                     if (ProductCancelUpdateCompare(returnData, data) == 1) {
                         $("<tr>").append(
                             $("<td>").text(returnData.ID),
