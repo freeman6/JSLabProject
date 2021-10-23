@@ -13,10 +13,10 @@ namespace WebAPI.Controllers
     [EnableCors(origins:"*", headers:"*", methods: "*")]
     public class ProductController : ApiController
     {
-        public List<Product> products = ProductHelper.Products;
+        public static List<Product> products = ProductHelper.Products;
 
         // GET api/values
-        public IEnumerable<Product> Get()
+        public List<Product> Get()
         {
             return products;
         }
@@ -28,13 +28,21 @@ namespace WebAPI.Controllers
         }
 
         // POST api/values
-        public Product Post([FromBody] Product item)
+        public List<Product> Post([FromBody] Product product)
         {
-            var result = new Product();
-            if (products.Any(x => x.ID == item.ID))
-                result = products.FirstOrDefault(x=>x.ID == item.ID);
+            if (products.Any(x => x.ID == product.ID))
+            {
+                var Item = products.FirstOrDefault(x => x.ID == product.ID);
+                Item.Name = product.Name;
+                Item.Price = product.Price;
+                Item.Memo = product.Memo;
+            }
+            else
+            {
+                products.Add(product);
+            }
 
-            return result;
+            return products;
         }
 
         // DELETE api/values/5

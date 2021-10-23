@@ -13,7 +13,7 @@
 </head>
 
 <body>
-    
+
     <div class="container-fluid">
         <h1>jQuery Ajax Lab Project</h1>
         <table id="project-table" class="table table-Drak table-striped">
@@ -28,17 +28,19 @@
             </thead>
             <tbody></tbody>
         </table>
-        <button type="button" onclick="javascript: ProductTable()" class="btn btn-primary">新增產品</button>
+        <button type="button" onclick="javascript: AddEmptyProduct()" class="btn btn-primary">新增產品</button>
         <button type="button" id="get" class="btn btn-primary">取得 Json Code</button>
     </div>
     <!-- Bootstrap js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
 
-    <!--Include jQuery CDN-->
-    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
-    
-    <!--Custom Javascript-->
+    <!-- Include jQuery CDN-->
+    <!--<script src="https://code.jquery.com/jquery-3.5.0.js"></script>-->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+
+    <!-- Custom Javascript-->
     <script>
+        // 取得產品列表
         $(function GetData() {
             $.ajax({
                 type: "get",
@@ -49,12 +51,13 @@
                         ProductList(returnData[i]);
                     })
                 },
-                error: function() {
+                error: function () {
                     alert("服務失聯，無法取得產品資料。")
                 }
             });
         });
 
+        // 產品列表
         function ProductList(item) {
             $("#project-table>tbody").append(
                 $("<tr>").append(
@@ -66,6 +69,55 @@
                     $("<td>").append($("<input>").addClass("form-control").attr("id", "Delete").attr("type", "button").val("刪除"))
                 )
             )
+        };
+
+        // 新增產品
+        function AddEmptyProduct() {
+            return $("#project-table>tbody").append(
+                $("<tr>").append(
+                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品代碼", type: "text" })),
+                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品名稱", type: "text" })),
+                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品價格", type: "text" })),
+                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品說明", type: "text" })),
+                    $("<td>").append($("<input>").addClass("form-control").attr({ id: "Update", type: "button" }).val("更新")),
+                    $("<td>").append($("<input>").addClass("form-control").attr({ id: "Cancel", type: "button" }).val("放棄"))
+                )
+            );
+        };
+
+        // 儲存產品
+        $(document).on("click", "#Update", UpdateProduct);
+        function UpdateProduct() {
+            var row = $(this).closest("tr");
+            var data = {
+                ID: row.find("input:eq(0)").val(),
+                Name: row.find("input:eq(1)").val(),
+                Price: row.find("input:eq(2)").val(),
+                Memo: row.find("input:eq(3)").val(),
+            };
+
+            $.ajax({
+                type: "Post",
+                url: "https://localhost:44359/API/Product",
+                dataType: "json",
+                data: data,
+                success: function (returnData) {
+                    $("<tr>").append(
+                        $("<td>").text(data.ID),
+                        $("<td>").text(data.Name),
+                        $("<td>").text(data.Price),
+                        $("<td>").text(data.Memo),
+                        $("<td>").append($("<input>").addClass("form-control")
+                            .attr({ type: "button" }).val("編輯")).attr("id", "Edit"),
+                        $("<td>").append($("<input>").addClass("form-control")
+                            .attr({ type: "button" }).val("刪除")).attr("id", "Delete")
+                    ).insertAfter(row);
+                    row.remove();
+                },
+                error: function () {
+                    alert("資料更新失敗。")
+                }
+            });
         };
     </script>
 </body>
