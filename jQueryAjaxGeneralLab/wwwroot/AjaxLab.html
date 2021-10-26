@@ -65,31 +65,82 @@
             $("#jsonList").hide();
         });
 
+        // 取得 Table row Data
+        function GetFocusItem(row, selector) {
+            var data;
+
+            switch (selector) {
+                case "input":
+                    data = {
+                        ID: row.find(selector + ":eq(0)").val(),
+                        Name: row.find(selector + ":eq(1)").val(),
+                        Price: row.find(selector + ":eq(2)").val(),
+                        Memo: row.find(selector + ":eq(3)").val()
+                    };
+                    break;
+                default:
+                    data = {
+                        ID: row.find(selector + ":eq(0)").text(),
+                        Name: row.find(selector + ":eq(1)").text(),
+                        Price: row.find(selector + ":eq(2)").text(),
+                        Memo: row.find(selector + ":eq(3)").text()
+                    };
+                    break;
+            }
+
+            return data;
+        }
+
+        // 插入產品項目
+        function GetProductTR(modifyStatus, item) {
+            var result;
+            switch (modifyStatus) {
+                case "list":
+                    result = $("<tr>").append(
+                        $("<td>").text(item.ID),
+                        $("<td>").text(item.Name),
+                        $("<td>").text(item.Price),
+                        $("<td>").text(item.Memo),
+                        $("<td>").append($("<input>").addClass("form-control").attr("id", "Edit").attr("type", "button").val("編輯")),
+                        $("<td>").append($("<input>").addClass("form-control").attr("id", "Delete").attr("type", "button").val("刪除"))
+                    );
+                    break;
+                case "new":
+                    result = $("<tr>").append(
+                        $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品代碼", type: "text" })),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品名稱", type: "text" })),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品價格", type: "text" })),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品說明", type: "text" })),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "Update", type: "button" }).val("更新")),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "Cancel", type: "button" }).val("放棄"))
+                    )
+                    break;
+                case "edit":
+                    result = $("<tr>").append(
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "ID", placeholder: "產品代碼", type: "text" }).val(item.ID)),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "Name", placeholder: "產品名稱", type: "text" }).val(item.Name)),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "Price", placeholder: "產品價格", type: "text" }).val(item.Price)),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "Memo", placeholder: "產品說明", type: "text" }).val(item.Memo)),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "Update", type: "button" }).val("更新")),
+                        $("<td>").append($("<input>").addClass("form-control").attr({ id: "Cancel", type: "button" }).val("取消"))
+                    )
+                    break;
+            }
+
+            return result;
+        };
+
         // 產品列表
         function ProductList(item) {
             $("#project-table>tbody").append(
-                $("<tr>").append(
-                    $("<td>").text(item.ID),
-                    $("<td>").text(item.Name),
-                    $("<td>").text(item.Price),
-                    $("<td>").text(item.Memo),
-                    $("<td>").append($("<input>").addClass("form-control").attr("id", "Edit").attr("type", "button").val("編輯")),
-                    $("<td>").append($("<input>").addClass("form-control").attr("id", "Delete").attr("type", "button").val("刪除"))
-                )
+                GetProductTR("list", item)
             )
         };
 
         // 新增產品
         function AddEmptyProduct() {
             return $("#project-table>tbody").append(
-                $("<tr>").append(
-                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品代碼", type: "text" })),
-                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品名稱", type: "text" })),
-                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品價格", type: "text" })),
-                    $("<td>").append($("<input>").addClass("form-control").attr({ placeholder: "產品說明", type: "text" })),
-                    $("<td>").append($("<input>").addClass("form-control").attr({ id: "Update", type: "button" }).val("更新")),
-                    $("<td>").append($("<input>").addClass("form-control").attr({ id: "Cancel", type: "button" }).val("放棄"))
-                )
+                GetProductTR("new")
             );
         };
 
@@ -97,12 +148,7 @@
         $(document).on("click", "#Update", UpdateProduct);
         function UpdateProduct() {
             var row = $(this).closest("tr");
-            var data = {
-                ID: row.find("input:eq(0)").val(),
-                Name: row.find("input:eq(1)").val(),
-                Price: row.find("input:eq(2)").val(),
-                Memo: row.find("input:eq(3)").val(),
-            };
+            var data = GetFocusItem(row, "input");
 
             $.ajax({
                 type: "Post",
@@ -110,16 +156,7 @@
                 dataType: "json",
                 data: data,
                 success: function (returnData) {
-                    $("<tr>").append(
-                        $("<td>").text(data.ID),
-                        $("<td>").text(data.Name),
-                        $("<td>").text(data.Price),
-                        $("<td>").text(data.Memo),
-                        $("<td>").append($("<input>").addClass("form-control")
-                            .attr({ type: "button" }).val("編輯")).attr("id", "Edit"),
-                        $("<td>").append($("<input>").addClass("form-control")
-                            .attr({ type: "button" }).val("刪除")).attr("id", "Delete")
-                    ).insertAfter(row);
+                    GetProductTR("list", data).insertAfter(row);
                     row.remove();
                 },
                 error: function () {
@@ -137,7 +174,7 @@
                     var $item=$("td", tr);
                     if ($item.eq(0).text() == source.ID) {
                         result = 0;
-                        return result;
+                        return false;
                     }
                 });
             }
@@ -148,12 +185,7 @@
         $(document).on("click", "#Cancel", CancelUpdateProduct);
         function CancelUpdateProduct() {
             var row = $(this).closest("tr");
-            var data = {
-                ID: row.find("input:eq(0)").val(),
-                Name: row.find("input:eq(1)").val(),
-                Price: row.find("input:eq(2)").val(),
-                Memo: row.find("input:eq(3)").val(),
-            };
+            var data = GetFocusItem(row, "input");
 
             if (data.ID != '') {
                 $.ajax({
@@ -163,16 +195,7 @@
                     dataType: "json",
                     success: function (returnData) {
                         if (ProductCancelUpdateCompare(returnData, data) == 1) {
-                            $("<tr>").append(
-                                $("<td>").text(returnData.ID),
-                                $("<td>").text(returnData.Name),
-                                $("<td>").text(returnData.Price),
-                                $("<td>").text(returnData.Memo),
-                                $("<td>").append($("<input>").addClass("form-control")
-                                    .attr({ type: "button" }).val("編輯")).attr("id", "Edit"),
-                                $("<td>").append($("<input>").addClass("form-control")
-                                    .attr({ type: "button" }).val("刪除")).attr("id", "Delete")
-                            ).insertAfter(row);
+                            GetProductTR("list", returnData).insertAfter(row);
                         }
                         row.remove();
                     },
@@ -190,12 +213,7 @@
         $(document).on("click", "#Delete", DeleteProduct);
         function DeleteProduct() {
             var row = $(this).closest("tr");
-            var data = {
-                ID: row.find("td:eq(0)").text(),
-                Name: row.find("td:eq(1)").text(),
-                Price: row.find("td:eq(2)").text(),
-                Memo: row.find("td:eq(3)").text()
-            };
+            var data = GetFocusItem(row, "td");
 
             $.ajax({
                 type: "Delete",
@@ -214,21 +232,9 @@
         $(document).on("click", "#Edit", EditProduct);
         function EditProduct() {
             var row = $(this).closest("tr");
-            var data = {
-                ID: row.find("td:eq(0)").text(),
-                Name: row.find("td:eq(1)").text(),
-                Price: row.find("td:eq(2)").text(),
-                Memo: row.find("td:eq(3)").text(),
-            };
+            var data = GetFocusItem(row, "td");
 
-            $("<tr>").append(
-                $("<td>").append($("<input>").addClass("form-control").attr({ id: "ID", placeholder: "產品代碼", type: "text" }).val(data.ID)),
-                $("<td>").append($("<input>").addClass("form-control").attr({ id: "Name", placeholder: "產品名稱", type: "text" }).val(data.Name)),
-                $("<td>").append($("<input>").addClass("form-control").attr({ id: "Price", placeholder: "產品價格", type: "text" }).val(data.Price)),
-                $("<td>").append($("<input>").addClass("form-control").attr({ id: "Memo", placeholder: "產品說明", type: "text" }).val(data.Memo)),
-                $("<td>").append($("<input>").addClass("form-control").attr({ id: "Update", type: "button" }).val("更新")),
-                $("<td>").append($("<input>").addClass("form-control").attr({ id: "Cancel", type: "button" }).val("取消"))
-            ).insertAfter(row);
+            GetProductTR("edit", data).insertAfter(row);
 
             row.remove();
         };
